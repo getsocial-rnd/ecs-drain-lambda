@@ -7,7 +7,7 @@ provider:
   runtime: go1.x
   region: us-east-1
   memorySize: 128
-  timeout: 300
+  timeout: 900
   stage: prod
   logRetentionInDays: 14
   iamRoleStatements:

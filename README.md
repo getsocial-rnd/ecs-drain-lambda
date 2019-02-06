@@ -60,7 +60,7 @@ When updating AMI for the ECS instances then ASG replaces them without ["Drainin
 
 ## Limitations
 
-- Function waits for 5 minutes for Drain to complete and fails with the timeout after
+- Function waits for 15 minutes for Drain to complete and fails with the timeout after
 
 - If function fails, then the default lifecycle hook action will be triggered (`ABANDON` or `CONTINUE` depending on your Hook configuration), either result will end up with eventual instance termination.
 
