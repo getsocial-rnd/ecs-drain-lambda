@@ -2,17 +2,20 @@
 
 
 [[projects]]
+  digest = "1:d8dc129ce888c3d86c79f100eb2a12da03cd9ea01bbdee6dd968029190be50cd"
   name = "github.com/aws/aws-lambda-go"
   packages = [
     "events",
     "lambda",
     "lambda/messages",
-    "lambdacontext"
+    "lambdacontext",
   ]
-  revision = "fafa7e49388b8991caf99308e80655ba91816b72"
-  version = "v1.1.0"
+  pruneopts = "NUT"
+  revision = "527f5d301d2993af078be6d0b63372786b3fc18f"
+  version = "v1.8.2"
 
 [[projects]]
+  digest = "1:5660b086e194f3f3325d69216718f149e03d890d07d70bf71804ee7f51e8805e"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -24,14 +27,19 @@
     "aws/credentials",
     "aws/credentials/ec2rolecreds",
     "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
     "aws/credentials/stscreds",
+    "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
     "aws/endpoints",
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/ini",
+    "internal/sdkio",
     "internal/sdkrand",
+    "internal/sdkuri",
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
@@ -44,25 +52,30 @@
     "service/autoscaling",
     "service/ec2",
     "service/ecs",
-    "service/sts"
+    "service/sts",
   ]
-  revision = "9a79087b1148376f4dd860c188c948479e2def3b"
-  version = "v1.13.7"
+  pruneopts = "NUT"
+  revision = "3248e106c35aafb9b982f5d086f0150faf24ee4e"
+  version = "v1.17.6"
 
 [[projects]]
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  revision = "32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a"
-  version = "v1.32.0"
-
-[[projects]]
+  digest = "1:1f2aebae7e7c856562355ec0198d8ca2fa222fb05e5b1b66632a1fce39631885"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
-  revision = "0b12d6b5"
+  pruneopts = "NUT"
+  revision = "c2b33e84"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "da6dff3f37b83a58555f015d374547f29c4d6fcbcc5784c1754aa592cc4f5ff9"
+  input-imports = [
+    "github.com/aws/aws-lambda-go/events",
+    "github.com/aws/aws-lambda-go/lambda",
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/autoscaling",
+    "github.com/aws/aws-sdk-go/service/ec2",
+    "github.com/aws/aws-sdk-go/service/ecs",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
