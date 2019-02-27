@@ -20,6 +20,7 @@ var (
 	ecsRegExp                      = regexp.MustCompile(`ECS_CLUSTER=(\S*)`)
 	ErrMissingUserData             = errors.New("This instance seems not to have UserData")
 	ErrMissingECSClusterInUserData = errors.New("This instance seems not to have EcsCluster definition in UserData")
+	ErrInstanceTerminated          = errors.New("This instance is already terminated")
 )
 
 func Drain(ecsCluster, ec2Instance string) error {
@@ -31,8 +32,7 @@ func Drain(ecsCluster, ec2Instance string) error {
 
 	// logging as JSON to look better in CloudWatch logs
 	str, _ := json.Marshal(instance)
-	fmt.Println("Container instance")
-	fmt.Println(string(str))
+	fmt.Println("Container instance", string(str))
 
 	// if we have some tasks running on the instance
 	// we need to drain it and wait for all tasks to shutdown
@@ -66,7 +66,7 @@ func Drain(ecsCluster, ec2Instance string) error {
 			return fmt.Errorf("Something went wrong: Instance not part of the ECS Cluster anymore!")
 		}
 
-		fmt.Printf("Waiting for tasks to shutdown... still running #%d\n", *instance.RunningTasksCount)
+		fmt.Printf("Waiting for tasks to shutdown... Number of still running tasks %d\n", *instance.RunningTasksCount)
 		time.Sleep(10 * time.Second)
 	}
 
@@ -97,6 +97,21 @@ func getContainerInstance(ecsCluster, ec2Instance string) (*ecs.ContainerInstanc
 }
 
 func GetClusterNameFromInstanceUserData(ec2Instance string) (string, error) {
+	// check instance state, error if already terminated
+	resp, err := ec2client.DescribeInstances(&ec2.DescribeInstancesInput{
+		InstanceIds: []*string{&ec2Instance},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if len(resp.Reservations) > 0 && len(resp.Reservations[0].Instances) > 0 {
+		switch *resp.Reservations[0].Instances[0].State.Name {
+		case ec2.InstanceStateNameTerminated, ec2.InstanceStateNameShuttingDown:
+			return "", ErrInstanceTerminated
+		}
+	}
+
 	att, err := ec2client.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
 		InstanceId: &ec2Instance,
 		Attribute:  aws.String("userData"),

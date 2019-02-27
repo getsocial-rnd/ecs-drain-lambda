@@ -4,11 +4,11 @@ Based on the original idea from [AWS Blog post](https://aws.amazon.com/ru/blogs/
 
 - Autoscaling Hooks events are received via CloudWatch rules, which makes possible having one function for draining many ECS Clusters
 
-- Reduced number of needed permissions and AWS API calls
-
 - [Serverless Framework](https://github.com/serverless/serverless) based
 
 - Written in Golang
+
+- Supports the draining of Spot based ECS instnces via [Spot Instance Interruption Notice](https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/spot-interruptions.html#spot-instance-termination-notices)
 
 ## Why?
 
@@ -18,7 +18,13 @@ When updating AMI for the ECS instances then ASG replaces them without ["Drainin
 
 *ecs-drain-lambda* function:
 
-- Receives **ANY** AutoScaling Lifecycle Terminate event (***[EC2 Auto Scaling Lifecycle Hooks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html) for `autoscaling:EC2_INSTANCE_TERMINATING` event should be configured on your ASG***) from CloudWatch Events
+- Receives CloudWatch event:
+
+    - **ANY** AutoScaling Lifecycle Terminate event ( ***[EC2 Auto Scaling Lifecycle Hooks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html) for `autoscaling:EC2_INSTANCE_TERMINATING` event should be configured on your ASG*** ) from CloudWatch Events
+
+    or
+
+    - **ANY** [Spot Instance Interruption Notice](https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/spot-interruptions.html#spot-instance-termination-notices). Imporatant, AWS doesn't guarantees that instance will be drained in time, instance could be terminated before the notice arrival.
 
 - Gets the ID of the instance that has to be terminated
 

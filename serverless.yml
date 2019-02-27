@@ -11,15 +11,16 @@ provider:
   stage: prod
   logRetentionInDays: 14
   iamRoleStatements:
-  - Effect: Allow
-    Action:
-    - autoscaling:CompleteLifecycleAction
-    - ec2:DescribeInstanceAttribute
-    - ecs:ListContainerInstances
-    - ecs:SubmitContainerStateChange
-    - ecs:DescribeContainerInstances
-    - ecs:UpdateContainerInstancesState
-    Resource: "*"
+    - Effect: Allow
+      Action:
+        - autoscaling:CompleteLifecycleAction
+        - ec2:DescribeInstanceAttribute
+        - ec2:DescribeInstances
+        - ecs:ListContainerInstances
+        - ecs:SubmitContainerStateChange
+        - ecs:DescribeContainerInstances
+        - ecs:UpdateContainerInstancesState
+      Resource: "*"
 
 functions:
   main:
@@ -30,9 +31,15 @@ functions:
       include:
         - ./bin/drain
     events:
-    - cloudwatchEvent:
-        event:
-          source:
-            - "aws.autoscaling"
-          detail-type:
-            - "EC2 Instance-terminate Lifecycle Action"
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.autoscaling"
+            detail-type:
+              - "EC2 Instance-terminate Lifecycle Action"
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ec2"
+            detail-type:
+              - "EC2 Spot Instance Interruption Warning"
