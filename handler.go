@@ -33,8 +33,7 @@ type (
 )
 
 func HandleRequest(ctx context.Context, event *events.CloudWatchEvent) error {
-	str, _ := json.Marshal(event)
-	fmt.Println("Got CloudWatch Event:", string(str))
+	printJSON("CloudWatch Event", event)
 
 	var instanceToDrain string
 	var finalAction = func() error { return nil }

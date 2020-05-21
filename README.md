@@ -8,7 +8,7 @@ Based on the original idea from [AWS Blog post](https://aws.amazon.com/ru/blogs/
 
 - Written in Golang
 
-- Supports the draining of Spot based ECS instnces via [Spot Instance Interruption Notice](https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/spot-interruptions.html#spot-instance-termination-notices)
+- Supports the draining of Spot based ECS instances via [Spot Instance Interruption Notice](https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/spot-interruptions.html#spot-instance-termination-notices)
 
 ## Why?
 

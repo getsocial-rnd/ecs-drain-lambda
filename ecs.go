@@ -30,43 +30,81 @@ func Drain(ecsCluster, ec2Instance string) error {
 		return err
 	}
 
-	// logging as JSON to look better in CloudWatch logs
-	str, _ := json.Marshal(instance)
-	fmt.Println("Container instance", string(str))
+	printJSON("Container instance", instance)
 
+	var tasksToShutdownCount int64
+	if instance != nil && instance.RunningTasksCount != nil {
+		tasksToShutdownCount = *instance.RunningTasksCount
+	}
+
+	var runningTaskArns []*string
 	// if we have some tasks running on the instance
 	// we need to drain it and wait for all tasks to shutdown
-	for *instance.RunningTasksCount > 0 {
+	for tasksToShutdownCount > 0 {
 		// if instance not being drained yet,
 		// start the drain
-		if *instance.Status != "DRAINING" {
-			fmt.Println("Starting draining")
+		if *instance.Status != ecs.ContainerInstanceStatusDraining {
+			fmt.Println("Starting draining and waiting for all tasks to shutdown")
 			_, err := ecsClient.UpdateContainerInstancesState(&ecs.UpdateContainerInstancesStateInput{
 				Cluster:            &ecsCluster,
 				ContainerInstances: []*string{instance.ContainerInstanceArn},
-				Status:             aws.String("DRAINING"),
+				Status:             aws.String(ecs.ContainerInstanceStatusDraining),
 			})
+			if err != nil {
+				return err
+			}
+
+			// fetch list of tasks running on that instance
+			resp, err := ecsClient.ListTasks(&ecs.ListTasksInput{
+				ContainerInstance: instance.ContainerInstanceArn,
+				Cluster:           &ecsCluster,
+			})
+			if err != nil {
+				return err
+			}
+			if resp != nil {
+				runningTaskArns = resp.TaskArns
+			}
+
+			// update instance information, to be sure that it started draining
+			instance, err = getContainerInstance(ecsCluster, ec2Instance)
 			if err != nil {
 				return err
 			}
 		}
 
-		// Get the instance info, to find out how many tasks still running
-		respInstances, err := ecsClient.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{
-			Cluster:            &ecsCluster,
-			ContainerInstances: []*string{instance.ContainerInstanceArn},
+		// monitor status of the tasks running on the current instance
+		tasks, err := ecsClient.DescribeTasks(&ecs.DescribeTasksInput{
+			Cluster: &ecsCluster,
+			Tasks:   runningTaskArns,
 		})
 		if err != nil {
 			return err
 		}
 
-		if len(respInstances.ContainerInstances) > 0 {
-			instance = respInstances.ContainerInstances[0]
-		} else {
-			return fmt.Errorf("Something went wrong: Instance not part of the ECS Cluster anymore!")
+		if tasks == nil || len(tasks.Tasks) == 0 {
+			fmt.Println("no tasks found")
 		}
 
-		fmt.Printf("Waiting for tasks to shutdown... Number of still running tasks %d\n", *instance.RunningTasksCount)
+		taskStates := map[string]int{}
+		tasksToShutdownCount = 0
+
+		for _, task := range tasks.Tasks {
+			// wait explicitly for tasks to become "STOPPED"
+			// other way we may stop the instance with the tasks that
+			// are still being in the "DEACTIVATING" state
+			// see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-lifecycle.html
+			if task.LastStatus == nil {
+				continue
+			}
+
+			taskStates[*task.LastStatus]++
+			if *task.LastStatus != ecs.DesiredStatusStopped {
+				tasksToShutdownCount++
+			}
+		}
+
+		printJSON("Instance task states", taskStates)
 		time.Sleep(10 * time.Second)
 	}
 
@@ -131,7 +169,7 @@ func GetClusterNameFromInstanceUserData(ec2Instance string) (string, error) {
 		return "", err
 	}
 
-	// Using RegExp to get actuall ECS Cluster name from UserData string
+	// Using RegExp to get actual ECS Cluster name from UserData string
 	m := ecsRegExp.FindAllStringSubmatch(string(decodedUserData), -1)
 	if len(m) == 0 || len(m[0]) < 2 {
 		fmt.Printf("UserData:\n%s", string(decodedUserData))
@@ -140,4 +178,11 @@ func GetClusterNameFromInstanceUserData(ec2Instance string) (string, error) {
 
 	// getting ECS Cluster name which we got from UserData
 	return m[0][1], nil
+}
+
+// AWS CloudWatch Logs prints only JSONs nicely
+func printJSON(text string, data interface{}) {
+	if b, err := json.Marshal(data); err == nil {
+		fmt.Println(text, string(b))
+	}
 }

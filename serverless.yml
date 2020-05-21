@@ -20,6 +20,8 @@ provider:
         - ecs:SubmitContainerStateChange
         - ecs:DescribeContainerInstances
         - ecs:UpdateContainerInstancesState
+        - ecs:ListTasks
+        - ecs:DescribeTasks
       Resource: "*"
 
 functions:
