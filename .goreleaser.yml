@@ -1,0 +1,12 @@
+builds:
+  - main: ./cmd/drain/main.go
+    # build for lambda env only
+    goarch:
+      - amd64
+    goos:
+      - linux
+archives:
+  - format: zip
+    # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
+    files:
+      - none*
