@@ -1,0 +1,7 @@
+builds:
+  - main: ./cmd/drain/main.go
+archives:
+  - format: zip
+    # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
+    files:
+      - none*
