@@ -45,3 +45,7 @@ functions:
               - "aws.ec2"
             detail-type:
               - "EC2 Spot Instance Interruption Warning"
+
+resources:
+  Description: |
+          Lambda for automatization of ECS Instances operations: https://github.com/getsocial-rnd/ecs-drain-lambda
