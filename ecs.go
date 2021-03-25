@@ -73,6 +73,11 @@ func Drain(ecsCluster, ec2Instance string) error {
 			}
 		}
 
+		if len(runningTaskArns) == 0 {
+			fmt.Println("no running tasks found")
+			break
+		}
+
 		// monitor status of the tasks running on the current instance
 		tasks, err := ecsClient.DescribeTasks(&ecs.DescribeTasksInput{
 			Cluster: &ecsCluster,
