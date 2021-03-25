@@ -79,7 +79,7 @@ func HandleRequest(ctx context.Context, event *events.CloudWatchEvent) error {
 	fmt.Println("ECS Cluster -", ecsCluster)
 	fmt.Println("EC2 Instance - ", instanceToDrain)
 
-	// Doing actuall "Drain" operation, which will move all the running
+	// Doing actual "Drain" operation, which will move all the running
 	// task from current instance to other aviliable instances.
 	// This operation could take some time, so if we have a lot of task
 	// on the instance, but 15 minutes lambda limit, should be enough
