@@ -17,7 +17,7 @@ import (
 var (
 	ecsClient                      = ecs.New(session.New())
 	ec2client                      = ec2.New(session.New())
-	ecsRegExp                      = regexp.MustCompile(`ECS_CLUSTER=(\S*)`)
+	ecsRegExp                      = regexp.MustCompile(`ECS_CLUSTER=([0-9A-Za-z_\-]*)`)
 	ErrMissingUserData             = errors.New("This instance seems not to have UserData")
 	ErrMissingECSClusterInUserData = errors.New("This instance seems not to have EcsCluster definition in UserData")
 	ErrInstanceTerminated          = errors.New("This instance is already terminated")
