@@ -175,13 +175,22 @@ func GetClusterNameFromInstanceUserData(ec2Instance string) (string, error) {
 	}
 
 	// Using RegExp to get actual ECS Cluster name from UserData string
-	m := ecsRegExp.FindAllStringSubmatch(string(decodedUserData), -1)
+	val, err := parseECSClusterValue(string(decodedUserData))
+	if err != nil {
+		return "", err
+	}
+
+	return val, nil
+}
+
+// Fetch value of ECS_CLUSTER variable with the regexp
+func parseECSClusterValue(str string) (string, error) {
+	m := ecsRegExp.FindAllStringSubmatch(str, -1)
 	if len(m) == 0 || len(m[0]) < 2 {
-		fmt.Printf("UserData:\n%s", string(decodedUserData))
+		fmt.Printf("UserData:\n%s\n", str)
 		return "", ErrMissingECSClusterInUserData
 	}
 
-	// getting ECS Cluster name which we got from UserData
 	return m[0][1], nil
 }
 
