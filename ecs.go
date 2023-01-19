@@ -132,7 +132,7 @@ func getContainerInstance(ecsCluster, ec2Instance string) (*ecs.ContainerInstanc
 		}
 
 		containerInstances = append(containerInstances, respInstances.ContainerInstances...)
-		return true
+		return !lastPage
 	})
 
 	if err != nil {
