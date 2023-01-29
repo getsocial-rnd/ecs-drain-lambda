@@ -118,20 +118,28 @@ func Drain(ecsCluster, ec2Instance string) error {
 }
 
 func getContainerInstance(ecsCluster, ec2Instance string) (*ecs.ContainerInstance, error) {
-	respList, err := ecsClient.ListContainerInstances(&ecs.ListContainerInstancesInput{Cluster: &ecsCluster})
-	if err != nil {
-		return nil, err
-	}
+	var containerInstances []*ecs.ContainerInstance
 
-	respInstances, err := ecsClient.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{
-		Cluster:            &ecsCluster,
-		ContainerInstances: respList.ContainerInstanceArns,
+	err := ecsClient.ListContainerInstancesPages(&ecs.ListContainerInstancesInput{Cluster: &ecsCluster}, func(page *ecs.ListContainerInstancesOutput, lastPage bool) bool {
+		respInstances, err := ecsClient.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{
+			Cluster:            &ecsCluster,
+			ContainerInstances: page.ContainerInstanceArns,
+		})
+
+		if err != nil {
+			fmt.Printf("Error describing container instances: %s", err)
+			return false
+		}
+
+		containerInstances = append(containerInstances, respInstances.ContainerInstances...)
+		return !lastPage
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	for _, i := range respInstances.ContainerInstances {
+	for _, i := range containerInstances {
 		if *i.Ec2InstanceId == ec2Instance {
 			return i, nil
 		}
