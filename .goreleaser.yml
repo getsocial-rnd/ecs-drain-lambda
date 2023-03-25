@@ -5,6 +5,8 @@ builds:
       - amd64
     goos:
       - linux
+    env:
+      - CGO_ENABLED=0
 archives:
   - format: zip
     # https://goreleaser.com/customization/archive/#packaging-only-the-binaries
