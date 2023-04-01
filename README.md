@@ -67,6 +67,10 @@ When updating AMI for the ECS instances then ASG replaces them without ["Drainin
 **Note**: by default `us-east-1` region is selected, if you need to deploy it to the
 different region you can use `sls deploy -v --region ${AWS_REGION}`
 
+## Deploy with Terraform
+
+If you want to deploy *ecs-drain-lambda* function with Terraform, there is [ecs-drain-lambda](https://registry.terraform.io/modules/nabeken/ecs-drain-lambda/aws/latest) Terraform Module.
+
 ## Limitations
 
 - Function waits for 15 minutes for Drain to complete and fails with the timeout after
