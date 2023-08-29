@@ -1,7 +1,11 @@
-build: export GOOS=linux
-build: 
-	go build -o bin/drain cmd/drain/main.go
-	@du -h bin/drain 
+GOOS=linux
+GOARCH=amd64
+CGO_ENABLED=0
+export
+
+build:
+	go build -tags lambda.norpc -o bootstrap cmd/drain/main.go
+	@du -h bootstrap
 
 deploy: build
 	sls deploy -v
