@@ -1,5 +1,5 @@
 GOOS=linux
-GOARCH=amd64
+GOARCH ?= amd64
 CGO_ENABLED=0
 export
 
